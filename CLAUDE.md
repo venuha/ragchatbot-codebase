@@ -4,6 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
+### Important: Always Use `uv` (Not pip)
+
+This project uses `uv` for all package and environment management. **Never use pip or python directly.** Always prefix commands with `uv run`.
+
 ### Environment Setup
 ```bash
 # Install all dependencies
@@ -12,7 +16,7 @@ uv sync
 # Install with development tools (black, flake8, isort, mypy)
 uv sync --group dev
 
-# Add new dependencies
+# Add new dependencies (NEVER use pip install)
 uv add package_name
 
 # Environment variables required (.env file in root):
@@ -25,7 +29,7 @@ ANTHROPIC_API_KEY=your_anthropic_api_key_here
 chmod +x run.sh
 ./run.sh
 
-# Manual start (from root directory)
+# Manual start (MUST use 'uv run', never run uvicorn or python directly)
 cd backend && uv run uvicorn app:app --reload --port 8000
 
 # Application URLs:
@@ -77,11 +81,18 @@ Verifies code quality without modifications. Exit code 0 = pass.
 **Troubleshooting:** If scripts aren't executable: `chmod +x scripts/*.sh`
 
 ### Python Execution
-Always use `uv run` to execute commands in the project's virtual environment:
+**CRITICAL:** Always use `uv run` to execute commands. Never use `pip`, `python`, or any command directly without the `uv run` prefix:
 ```bash
+# Correct:
 uv run python script.py
 uv run pytest
+uv run uvicorn app:app --reload
 uv run black backend/
+
+# Wrong (DO NOT USE):
+# python script.py
+# pip install package
+# uvicorn app:app --reload
 ```
 
 ## Architecture Overview
