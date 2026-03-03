@@ -744,7 +744,7 @@ details[open] .suggested-header::before {
     text-transform: none;
 }
 
-/* New Chat Button */
+/* New Chat Button - Styled to match collapsible headers */
 .new-chat-button {
     font-size: 0.875rem;
     font-weight: 600;
@@ -758,6 +758,16 @@ details[open] .suggested-header::before {
     letter-spacing: 0.5px;
     transition: color 0.2s ease;
     width: 100%;
+    list-style: none;
+    outline: none;
+}
+
+.new-chat-button::before {
+    content: '+';
+    display: inline-block;
+    margin-right: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 700;
 }
 
 .new-chat-button:focus {
