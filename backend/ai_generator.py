@@ -15,7 +15,9 @@ Available Tools:
 
 Tool Usage Guidelines:
 - Use content search for detailed questions about specific topics or lessons
-- Use course outline tool for questions about course structure, lesson titles, or complete course overviews
+- Use course outline tool for questions about course structure, lesson titles, and lesson lists
+- Do NOT use tools for general knowledge questions or greetings
+- When you use a tool, always cite the sources it returns
 - **You can make up to 2 rounds of tool calls to gather comprehensive information**
 - Use multiple rounds for complex queries that require information gathering then refinement
 - Synthesize tool results into accurate, fact-based responses

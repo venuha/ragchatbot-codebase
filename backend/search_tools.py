@@ -132,6 +132,8 @@ class CourseOutlineTool(Tool):
 
     def __init__(self, vector_store: VectorStore):
         self.store = vector_store
+        self.last_sources = []  # Track sources from last query
+        self.last_source_links = []  # Track course links from last query
 
     def get_tool_definition(self) -> Dict[str, Any]:
         """Return Anthropic tool definition for this tool"""
@@ -194,6 +196,10 @@ class CourseOutlineTool(Tool):
                 lesson_title = lesson.get("lesson_title", "N/A")
                 outline.append(f"Lesson {lesson_num}: {lesson_title}")
 
+            # Track source for UI
+            self.last_sources = [course_title]
+            self.last_source_links = [metadata.get('course_link')]
+
             return "\n".join(outline)
 
         except Exception as e:
@@ -205,6 +211,7 @@ class ToolManager:
 
     def __init__(self):
         self.tools = {}
+        self.last_executed_tool = None  # Track most recently executed tool
 
     def register_tool(self, tool: Tool):
         """Register any tool that implements the Tool interface"""
@@ -223,21 +230,24 @@ class ToolManager:
         if tool_name not in self.tools:
             return f"Tool '{tool_name}' not found"
 
+        self.last_executed_tool = tool_name
         return self.tools[tool_name].execute(**kwargs)
 
     def get_last_sources(self) -> list:
-        """Get sources from the last search operation"""
-        # Check all tools for last_sources attribute
-        for tool in self.tools.values():
-            if hasattr(tool, "last_sources") and tool.last_sources:
+        """Get sources from the most recently executed tool"""
+        # Get sources from most recently executed tool
+        if self.last_executed_tool and self.last_executed_tool in self.tools:
+            tool = self.tools[self.last_executed_tool]
+            if hasattr(tool, "last_sources"):
                 return tool.last_sources
         return []
 
     def get_last_source_links(self) -> list:
-        """Get source links from the last search operation"""
-        # Check all tools for last_source_links attribute
-        for tool in self.tools.values():
-            if hasattr(tool, "last_source_links") and tool.last_source_links:
+        """Get source links from the most recently executed tool"""
+        # Get source links from most recently executed tool
+        if self.last_executed_tool and self.last_executed_tool in self.tools:
+            tool = self.tools[self.last_executed_tool]
+            if hasattr(tool, "last_source_links"):
                 return tool.last_source_links
         return []
 

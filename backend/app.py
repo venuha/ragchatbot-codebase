@@ -114,7 +114,7 @@ async def clear_session(request: ClearSessionRequest):
 @app.on_event("startup")
 async def startup_event():
     """Load initial documents on startup"""
-    docs_path = "../docs"
+    docs_path = os.path.join(os.path.dirname(__file__), "..", "docs")
     if os.path.exists(docs_path):
         print("Loading initial documents...")
         try:
