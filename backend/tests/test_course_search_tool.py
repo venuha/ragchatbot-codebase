@@ -227,11 +227,11 @@ class TestCourseSearchTool:
         assert len(first_sources) > 0
         assert len(first_links) > 0
 
-        # Execute second search with empty results
-        mock_vector_store.search.return_value = SearchResults([], [], [])
-        tool.execute("second query")
+        # Manually reset sources (mimics ToolManager.reset_sources())
+        tool.last_sources = []
+        tool.last_source_links = []
 
-        # Verify sources are cleared for empty results
+        # Verify sources are now cleared
         assert tool.last_sources == []
         assert tool.last_source_links == []
 

@@ -131,10 +131,10 @@ class TestRAGSystem:
             call_args = mock_ai_gen.return_value.generate_response.call_args[1]
             assert call_args["conversation_history"] == "Previous conversation"
 
-            # Verify session was updated
+            # Verify session was updated with the original query (not wrapped)
             mock_session.return_value.add_exchange.assert_called_once_with(
                 "session123",
-                "Answer this question about course materials: Follow up question",
+                "Follow up question",
                 "Follow-up response.",
             )
 
@@ -280,6 +280,7 @@ class TestRAGSystem:
             patch("rag_system.SessionManager"),
             patch("os.path.exists") as mock_exists,
             patch("os.listdir") as mock_listdir,
+            patch("os.path.isfile") as mock_isfile,
         ):
 
             # Setup mocks
@@ -290,6 +291,8 @@ class TestRAGSystem:
                 "course3.docx",
                 "ignore.jpg",
             ]
+            # Mock isfile to return True for valid files, False for .jpg
+            mock_isfile.side_effect = lambda path: not path.endswith(".jpg")
             mock_vector_store.return_value.get_existing_course_titles.return_value = []
 
             # Mock document processing

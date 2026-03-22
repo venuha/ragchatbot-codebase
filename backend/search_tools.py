@@ -85,6 +85,11 @@ class CourseSearchTool(Tool):
                 filter_info += f" in course '{course_name}'"
             if lesson_number:
                 filter_info += f" in lesson {lesson_number}"
+
+            # Check for configuration error
+            if self.store.max_results == 0:
+                return "Configuration error: MAX_RESULTS=0 prevents search. Please fix config.py."
+
             return f"No relevant content found{filter_info}."
 
         # Format and return results

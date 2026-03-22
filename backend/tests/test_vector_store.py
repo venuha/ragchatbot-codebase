@@ -46,44 +46,24 @@ class TestVectorStore:
             assert len(result.documents) == 1
             assert result.documents[0] == "Sample document"
 
-    def test_search_with_broken_max_results_zero(
+    def test_validation_prevents_max_results_zero(
         self, broken_config, mock_chroma_collection
     ):
-        """Test the critical MAX_RESULTS=0 issue"""
+        """Test that MAX_RESULTS=0 is now prevented by validation"""
         with patch("vector_store.chromadb") as mock_chromadb:
-            # Setup mocks - simulate empty results when n_results=0
+            # Setup mocks
             mock_client = Mock()
             mock_chromadb.PersistentClient.return_value = mock_client
 
-            # Mock collection that returns empty results when n_results=0
-            empty_collection = Mock()
-            empty_collection.query.return_value = {
-                "documents": [[]],  # Empty results due to n_results=0
-                "metadatas": [[]],
-                "distances": [[]],
-            }
-            mock_client.get_or_create_collection.return_value = empty_collection
+            # Note: Config is now fixed, so manually set max_results=0 to test validation
+            with pytest.raises(ValueError, match="max_results must be positive"):
+                vector_store = VectorStore(
+                    chroma_path=broken_config.CHROMA_PATH,
+                    embedding_model=broken_config.EMBEDDING_MODEL,
+                    max_results=0,  # This should raise ValueError now!
+                )
 
-            # Create vector store with broken config (MAX_RESULTS=0)
-            vector_store = VectorStore(
-                chroma_path=broken_config.CHROMA_PATH,
-                embedding_model=broken_config.EMBEDDING_MODEL,
-                max_results=broken_config.MAX_RESULTS,  # This is 0!
-            )
-
-            # Execute search
-            result = vector_store.search("valid query")
-
-            # Assert that ChromaDB query was called with n_results=0
-            empty_collection.query.assert_called_once_with(
-                query_texts=["valid query"], n_results=0, where=None  # This is the bug!
-            )
-
-            # Verify that we get empty results even for valid queries
-            assert result.is_empty()
-            assert len(result.documents) == 0
-
-            # This demonstrates the root cause of "query failed" responses
+            # This test verifies the validation prevents the bug from recurring
 
     def test_search_with_course_filter(self, test_config, mock_chroma_collection):
         """Test search with course name filter"""
