@@ -17,9 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
     courseTitles = document.getElementById('courseTitles');
     newChatButton = document.getElementById('newChatButton');
     themeToggle = document.getElementById('themeToggle');
-    
+
     setupEventListeners();
     initializeTheme();
+
+    // Enable theme transitions after initial load to prevent flash
+    requestAnimationFrame(() => {
+        document.body.classList.add('theme-transitions-enabled');
+    });
+
     createNewSession();
     loadCourseStats();
 });
@@ -247,9 +253,25 @@ async function loadCourseStats() {
 
 // Theme Functions
 function initializeTheme() {
-    // Get saved theme preference or default to dark
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    setTheme(savedTheme);
+    // Get saved theme preference, or detect system preference, or default to dark
+    const savedTheme = localStorage.getItem('theme');
+
+    if (savedTheme) {
+        // User has explicitly set a preference
+        setTheme(savedTheme);
+    } else {
+        // Detect system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setTheme(prefersDark ? 'dark' : 'light');
+    }
+
+    // Listen for system theme changes (when user hasn't set explicit preference)
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        // Only auto-switch if user hasn't set an explicit preference
+        if (!localStorage.getItem('theme')) {
+            setTheme(e.matches ? 'dark' : 'light');
+        }
+    });
 }
 
 function toggleTheme() {
@@ -261,12 +283,12 @@ function toggleTheme() {
 function setTheme(theme) {
     if (theme === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
-        themeToggle.setAttribute('aria-label', 'Switch to dark theme');
+        themeToggle.setAttribute('aria-label', 'Switch to dark mode (current: light mode)');
     } else {
         document.documentElement.removeAttribute('data-theme');
-        themeToggle.setAttribute('aria-label', 'Switch to light theme');
+        themeToggle.setAttribute('aria-label', 'Switch to light mode (current: dark mode)');
     }
-    
+
     // Save theme preference
     localStorage.setItem('theme', theme);
 }

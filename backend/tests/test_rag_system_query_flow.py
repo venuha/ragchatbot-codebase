@@ -9,9 +9,9 @@ Tests cover:
 - Configuration issues (MAX_RESULTS=0 bug)
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
+import pytest
 from config import Config
 from rag_system import RAGSystem
 from vector_store import SearchResults
@@ -137,7 +137,9 @@ class TestRAGSystemQueryFlow:
             # Setup
             mock_ai_instance = Mock()
             mock_ai_gen.return_value = mock_ai_instance
-            mock_ai_instance.generate_response.return_value = "Lesson 2 covers API usage."
+            mock_ai_instance.generate_response.return_value = (
+                "Lesson 2 covers API usage."
+            )
 
             mock_session_instance = Mock()
             mock_session_mgr.return_value = mock_session_instance
@@ -146,20 +148,23 @@ class TestRAGSystemQueryFlow:
             )
 
             rag_system = RAGSystem(test_config)
-            rag_system.tool_manager.get_last_sources = Mock(return_value=["Course - Lesson 2"])
+            rag_system.tool_manager.get_last_sources = Mock(
+                return_value=["Course - Lesson 2"]
+            )
             rag_system.tool_manager.get_last_source_links = Mock(return_value=[None])
 
             # Execute with session_id
             response, sources, source_links = rag_system.query(
-                "What about lesson 2?",
-                session_id="session_123"
+                "What about lesson 2?", session_id="session_123"
             )
 
             # Assert
             assert "Lesson 2" in response
 
             # Verify history was retrieved
-            mock_session_instance.get_conversation_history.assert_called_once_with("session_123")
+            mock_session_instance.get_conversation_history.assert_called_once_with(
+                "session_123"
+            )
 
             # Verify history passed to AI
             call_kwargs = mock_ai_instance.generate_response.call_args[1]
@@ -261,7 +266,9 @@ class TestRAGSystemQueryFlow:
             # Setup - VectorStore raises on search
             mock_vector_instance = Mock()
             mock_vector_store.return_value = mock_vector_instance
-            mock_vector_instance.search.side_effect = Exception("Database connection failed")
+            mock_vector_instance.search.side_effect = Exception(
+                "Database connection failed"
+            )
 
             mock_ai_instance = Mock()
             mock_ai_gen.return_value = mock_ai_instance
@@ -297,14 +304,14 @@ class TestRAGSystemQueryFlow:
                 return_value=[
                     "Course 1 - Lesson 1",
                     "Course 1 - Lesson 2",
-                    "Course 2 - Lesson 1"
+                    "Course 2 - Lesson 1",
                 ]
             )
             rag_system.tool_manager.get_last_source_links = Mock(
                 return_value=[
                     "https://example.com/c1/l1",
                     "https://example.com/c1/l2",
-                    "https://example.com/c2/l1"
+                    "https://example.com/c2/l1",
                 ]
             )
 
@@ -334,7 +341,9 @@ class TestRAGSystemQueryFlow:
 
             # Mock sources
             rag_system.tool_manager.get_last_sources = Mock(return_value=["Source 1"])
-            rag_system.tool_manager.get_last_source_links = Mock(return_value=["Link 1"])
+            rag_system.tool_manager.get_last_source_links = Mock(
+                return_value=["Link 1"]
+            )
             mock_reset = Mock()
             rag_system.tool_manager.reset_sources = mock_reset
 
@@ -358,10 +367,7 @@ class TestRAGSystemQueryFlow:
 
             # When MAX_RESULTS=0, ChromaDB returns empty results
             empty_results = SearchResults(
-                documents=[],
-                metadata=[],
-                distances=[],
-                error=None
+                documents=[], metadata=[], distances=[], error=None
             )
             mock_vector_instance.search.return_value = empty_results
             mock_vector_instance.max_results = 0  # Broken value
@@ -396,7 +402,9 @@ class TestRAGSystemQueryFlow:
             # Setup - AI generator raises exception
             mock_ai_instance = Mock()
             mock_ai_gen.return_value = mock_ai_instance
-            mock_ai_instance.generate_response.side_effect = Exception("API rate limit exceeded")
+            mock_ai_instance.generate_response.side_effect = Exception(
+                "API rate limit exceeded"
+            )
 
             rag_system = RAGSystem(test_config)
 
@@ -451,7 +459,9 @@ class TestRAGSystemQueryFlow:
             rag_system.tool_manager.get_last_source_links = Mock(return_value=[])
 
             # Execute
-            response, sources, source_links = rag_system.query("What is lesson 1 about?")
+            response, sources, source_links = rag_system.query(
+                "What is lesson 1 about?"
+            )
 
             # Assert - verify prompt formatting
             call_args = mock_ai_instance.generate_response.call_args
@@ -474,7 +484,7 @@ class TestRAGSystemQueryFlow:
             mock_vector_instance.get_existing_course_titles.return_value = [
                 "Course 1",
                 "Course 2",
-                "Course 3"
+                "Course 3",
             ]
 
             rag_system = RAGSystem(test_config)

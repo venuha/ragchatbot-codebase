@@ -177,7 +177,9 @@ class TestConfig:
         errors = validate_config(current_config)
 
         # Should have NO validation errors for MAX_RESULTS (fixed!)
-        assert not any("MAX_RESULTS must be greater than 0" in error for error in errors)
+        assert not any(
+            "MAX_RESULTS must be greater than 0" in error for error in errors
+        )
 
         # Test that validation would catch if someone breaks it again
         broken_config = Config()

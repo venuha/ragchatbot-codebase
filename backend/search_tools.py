@@ -203,7 +203,7 @@ class CourseOutlineTool(Tool):
 
             # Track source for UI
             self.last_sources = [course_title]
-            self.last_source_links = [metadata.get('course_link')]
+            self.last_source_links = [metadata.get("course_link")]
 
             return "\n".join(outline)
 

@@ -53,11 +53,14 @@ body {
     overflow: hidden;
     margin: 0;
     padding: 0;
+}
+
+/* Smooth transitions for theme elements - only when theme transitions are enabled */
+body.theme-transitions-enabled {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Smooth transitions for theme elements */
-* {
+body.theme-transitions-enabled * {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 

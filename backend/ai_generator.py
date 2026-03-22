@@ -155,7 +155,10 @@ Provide only the direct answer to what was asked.
                 except Exception as e:
                     # Tool execution failed, stop rounds
                     import logging
-                    logging.error(f"Tool execution failed: {content_block.name} - {str(e)}")
+
+                    logging.error(
+                        f"Tool execution failed: {content_block.name} - {str(e)}"
+                    )
 
                     tool_results.append(
                         {

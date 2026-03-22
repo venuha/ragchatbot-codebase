@@ -8,9 +8,9 @@ Tests cover:
 - Tool definition structure validation
 """
 
-import pytest
 from unittest.mock import Mock, patch
 
+import pytest
 from search_tools import CourseSearchTool, ToolManager
 from vector_store import SearchResults
 
@@ -19,7 +19,9 @@ from vector_store import SearchResults
 class TestCourseSearchToolExecute:
     """Test CourseSearchTool.execute() method comprehensively"""
 
-    def test_execute_basic_search_success(self, mock_vector_store, sample_search_results):
+    def test_execute_basic_search_success(
+        self, mock_vector_store, sample_search_results
+    ):
         """Test successful search without any filters"""
         # Setup
         mock_vector_store.search.return_value = sample_search_results
@@ -39,17 +41,16 @@ class TestCourseSearchToolExecute:
             lesson_number=None,
         )
 
-    def test_execute_with_course_filter_success(self, mock_vector_store, sample_search_results):
+    def test_execute_with_course_filter_success(
+        self, mock_vector_store, sample_search_results
+    ):
         """Test search with course_name filter"""
         # Setup
         mock_vector_store.search.return_value = sample_search_results
         tool = CourseSearchTool(mock_vector_store)
 
         # Execute
-        result = tool.execute(
-            query="What is covered?",
-            course_name="Anthropic Course"
-        )
+        result = tool.execute(query="What is covered?", course_name="Anthropic Course")
 
         # Assert
         assert "Building Towards Computer Use with Anthropic" in result
@@ -59,17 +60,16 @@ class TestCourseSearchToolExecute:
             lesson_number=None,
         )
 
-    def test_execute_with_lesson_filter_success(self, mock_vector_store, sample_search_results):
+    def test_execute_with_lesson_filter_success(
+        self, mock_vector_store, sample_search_results
+    ):
         """Test search with lesson_number filter"""
         # Setup
         mock_vector_store.search.return_value = sample_search_results
         tool = CourseSearchTool(mock_vector_store)
 
         # Execute
-        result = tool.execute(
-            query="lesson content",
-            lesson_number=1
-        )
+        result = tool.execute(query="lesson content", lesson_number=1)
 
         # Assert
         assert "Lesson 1" in result
@@ -79,7 +79,9 @@ class TestCourseSearchToolExecute:
             lesson_number=1,
         )
 
-    def test_execute_with_both_filters_success(self, mock_vector_store, sample_search_results):
+    def test_execute_with_both_filters_success(
+        self, mock_vector_store, sample_search_results
+    ):
         """Test search with both course and lesson filters"""
         # Setup
         mock_vector_store.search.return_value = sample_search_results
@@ -87,9 +89,7 @@ class TestCourseSearchToolExecute:
 
         # Execute
         result = tool.execute(
-            query="specific content",
-            course_name="Test Course",
-            lesson_number=2
+            query="specific content", course_name="Test Course", lesson_number=2
         )
 
         # Assert
@@ -104,10 +104,7 @@ class TestCourseSearchToolExecute:
         """Test handling of empty search results"""
         # Setup - empty results
         empty_results = SearchResults(
-            documents=[],
-            metadata=[],
-            distances=[],
-            error=None
+            documents=[], metadata=[], distances=[], error=None
         )
         mock_vector_store.search.return_value = empty_results
         tool = CourseSearchTool(mock_vector_store)
@@ -124,19 +121,13 @@ class TestCourseSearchToolExecute:
         """Test empty results message includes filter info"""
         # Setup
         empty_results = SearchResults(
-            documents=[],
-            metadata=[],
-            distances=[],
-            error=None
+            documents=[], metadata=[], distances=[], error=None
         )
         mock_vector_store.search.return_value = empty_results
         tool = CourseSearchTool(mock_vector_store)
 
         # Execute
-        result = tool.execute(
-            query="nonexistent",
-            course_name="Test Course"
-        )
+        result = tool.execute(query="nonexistent", course_name="Test Course")
 
         # Assert
         assert "No relevant content found in course 'Test Course'" in result
@@ -145,19 +136,13 @@ class TestCourseSearchToolExecute:
         """Test empty results message includes lesson filter info"""
         # Setup
         empty_results = SearchResults(
-            documents=[],
-            metadata=[],
-            distances=[],
-            error=None
+            documents=[], metadata=[], distances=[], error=None
         )
         mock_vector_store.search.return_value = empty_results
         tool = CourseSearchTool(mock_vector_store)
 
         # Execute
-        result = tool.execute(
-            query="nonexistent",
-            lesson_number=5
-        )
+        result = tool.execute(query="nonexistent", lesson_number=5)
 
         # Assert
         assert "No relevant content found in lesson 5" in result
@@ -166,19 +151,14 @@ class TestCourseSearchToolExecute:
         """Test empty results message includes both filters"""
         # Setup
         empty_results = SearchResults(
-            documents=[],
-            metadata=[],
-            distances=[],
-            error=None
+            documents=[], metadata=[], distances=[], error=None
         )
         mock_vector_store.search.return_value = empty_results
         tool = CourseSearchTool(mock_vector_store)
 
         # Execute
         result = tool.execute(
-            query="nonexistent",
-            course_name="Test Course",
-            lesson_number=3
+            query="nonexistent", course_name="Test Course", lesson_number=3
         )
 
         # Assert
@@ -192,7 +172,7 @@ class TestCourseSearchToolExecute:
             documents=[],
             metadata=[],
             distances=[],
-            error="Search error: Database connection failed"
+            error="Search error: Database connection failed",
         )
         mock_vector_store.search.return_value = error_results
         tool = CourseSearchTool(mock_vector_store)
@@ -210,16 +190,13 @@ class TestCourseSearchToolExecute:
             documents=[],
             metadata=[],
             distances=[],
-            error="No course found matching 'Invalid Course'"
+            error="No course found matching 'Invalid Course'",
         )
         mock_vector_store.search.return_value = error_results
         tool = CourseSearchTool(mock_vector_store)
 
         # Execute
-        result = tool.execute(
-            query="test",
-            course_name="Invalid Course"
-        )
+        result = tool.execute(query="test", course_name="Invalid Course")
 
         # Assert
         assert "No course found matching 'Invalid Course'" in result
@@ -239,12 +216,10 @@ class TestCourseSearchToolExecute:
         # Setup
         single_result = SearchResults(
             documents=["This is lesson 1 content"],
-            metadata=[{
-                "course_title": "Test Course",
-                "lesson_number": 1,
-                "chunk_index": 0
-            }],
-            distances=[0.1]
+            metadata=[
+                {"course_title": "Test Course", "lesson_number": 1, "chunk_index": 0}
+            ],
+            distances=[0.1],
         )
         mock_vector_store.search.return_value = single_result
         mock_vector_store.get_lesson_link.return_value = "https://example.com/lesson1"
@@ -268,20 +243,20 @@ class TestCourseSearchToolExecute:
             documents=[
                 "Content from lesson 1",
                 "Content from lesson 2",
-                "More content from lesson 1"
+                "More content from lesson 1",
             ],
             metadata=[
                 {"course_title": "Test Course", "lesson_number": 1, "chunk_index": 0},
                 {"course_title": "Test Course", "lesson_number": 2, "chunk_index": 1},
-                {"course_title": "Test Course", "lesson_number": 1, "chunk_index": 2}
+                {"course_title": "Test Course", "lesson_number": 1, "chunk_index": 2},
             ],
-            distances=[0.1, 0.2, 0.3]
+            distances=[0.1, 0.2, 0.3],
         )
         mock_vector_store.search.return_value = multiple_results
         mock_vector_store.get_lesson_link.side_effect = [
             "https://example.com/lesson1",
             "https://example.com/lesson2",
-            "https://example.com/lesson1"
+            "https://example.com/lesson1",
         ]
         tool = CourseSearchTool(mock_vector_store)
 
@@ -304,12 +279,10 @@ class TestCourseSearchToolExecute:
         # Setup
         result_no_lesson = SearchResults(
             documents=["General course content"],
-            metadata=[{
-                "course_title": "Test Course",
-                "lesson_number": None,
-                "chunk_index": 0
-            }],
-            distances=[0.1]
+            metadata=[
+                {"course_title": "Test Course", "lesson_number": None, "chunk_index": 0}
+            ],
+            distances=[0.1],
         )
         mock_vector_store.search.return_value = result_no_lesson
         tool = CourseSearchTool(mock_vector_store)
@@ -325,7 +298,9 @@ class TestCourseSearchToolExecute:
         # Verify get_lesson_link was NOT called
         mock_vector_store.get_lesson_link.assert_not_called()
 
-    def test_source_tracking_cleared_via_tool_manager(self, mock_vector_store, sample_search_results):
+    def test_source_tracking_cleared_via_tool_manager(
+        self, mock_vector_store, sample_search_results
+    ):
         """Test that sources can be cleared through ToolManager"""
         # Setup
         mock_vector_store.search.return_value = sample_search_results

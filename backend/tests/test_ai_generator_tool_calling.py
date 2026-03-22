@@ -9,9 +9,9 @@ Tests cover:
 - Tool execution failures
 """
 
-import pytest
 from unittest.mock import Mock, patch
 
+import pytest
 from ai_generator import AIGenerator
 
 
@@ -66,31 +66,34 @@ class TestAIGeneratorToolCalling:
             final_response = Mock()
             final_response.stop_reason = "end_turn"
             final_response.content = [Mock()]
-            final_response.content[0].text = "Based on the search results, lesson 1 covers computer use."
+            final_response.content[0].text = (
+                "Based on the search results, lesson 1 covers computer use."
+            )
 
             # Setup side_effect for two calls
             mock_client.messages.create.side_effect = [initial_response, final_response]
 
             # Setup tool manager
-            mock_tool_manager.execute_tool.return_value = "Search results: Lesson 1 content..."
+            mock_tool_manager.execute_tool.return_value = (
+                "Search results: Lesson 1 content..."
+            )
 
             # Execute
             generator = AIGenerator("test-api-key", "claude-sonnet-4-20250514")
             tools = mock_tool_manager.get_tool_definitions()
             response = generator.generate_response(
-                "What is in lesson 1?",
-                tools=tools,
-                tool_manager=mock_tool_manager
+                "What is in lesson 1?", tools=tools, tool_manager=mock_tool_manager
             )
 
             # Assert
-            assert response == "Based on the search results, lesson 1 covers computer use."
+            assert (
+                response == "Based on the search results, lesson 1 covers computer use."
+            )
             assert mock_client.messages.create.call_count == 2
 
             # Verify tool was executed
             mock_tool_manager.execute_tool.assert_called_once_with(
-                "search_course_content",
-                query="lesson 1 content"
+                "search_course_content", query="lesson 1 content"
             )
 
     def test_generate_response_multiple_tools_same_round(self, mock_tool_manager):
@@ -129,16 +132,14 @@ class TestAIGeneratorToolCalling:
             # Setup tool manager to return different results
             mock_tool_manager.execute_tool.side_effect = [
                 "Search result 1",
-                "Outline result"
+                "Outline result",
             ]
 
             # Execute
             generator = AIGenerator("test-api-key", "claude-sonnet-4-20250514")
             tools = mock_tool_manager.get_tool_definitions()
             response = generator.generate_response(
-                "Tell me about the course",
-                tools=tools,
-                tool_manager=mock_tool_manager
+                "Tell me about the course", tools=tools, tool_manager=mock_tool_manager
             )
 
             # Assert
@@ -147,12 +148,10 @@ class TestAIGeneratorToolCalling:
 
             # Verify both tools were called
             mock_tool_manager.execute_tool.assert_any_call(
-                "search_course_content",
-                query="first query"
+                "search_course_content", query="first query"
             )
             mock_tool_manager.execute_tool.assert_any_call(
-                "get_course_outline",
-                course_name="Test Course"
+                "get_course_outline", course_name="Test Course"
             )
 
     def test_generate_response_two_sequential_rounds(self, mock_tool_manager):
@@ -189,26 +188,26 @@ class TestAIGeneratorToolCalling:
             mock_client.messages.create.side_effect = [
                 round1_response,
                 round2_response,
-                final_response
+                final_response,
             ]
 
             mock_tool_manager.execute_tool.side_effect = [
                 "Result from search",
-                "Result from outline"
+                "Result from outline",
             ]
 
             # Execute
             generator = AIGenerator("test-api-key", "claude-sonnet-4-20250514")
             tools = mock_tool_manager.get_tool_definitions()
             response = generator.generate_response(
-                "Complex query",
-                tools=tools,
-                tool_manager=mock_tool_manager
+                "Complex query", tools=tools, tool_manager=mock_tool_manager
             )
 
             # Assert
             assert response == "Final answer after 2 tool rounds."
-            assert mock_client.messages.create.call_count == 3  # 2 tool rounds + 1 final
+            assert (
+                mock_client.messages.create.call_count == 3
+            )  # 2 tool rounds + 1 final
             assert mock_tool_manager.execute_tool.call_count == 2
 
     def test_generate_response_tool_execution_failure(self, mock_tool_manager):
@@ -242,9 +241,7 @@ class TestAIGeneratorToolCalling:
             generator = AIGenerator("test-api-key", "claude-sonnet-4-20250514")
             tools = mock_tool_manager.get_tool_definitions()
             response = generator.generate_response(
-                "Query",
-                tools=tools,
-                tool_manager=mock_tool_manager
+                "Query", tools=tools, tool_manager=mock_tool_manager
             )
 
             # Assert
@@ -259,7 +256,10 @@ class TestAIGeneratorToolCalling:
             tool_result_msg = messages[-1]
             assert tool_result_msg["role"] == "user"
             assert tool_result_msg["content"][0]["type"] == "tool_result"
-            assert "Error: Tool execution failed" in tool_result_msg["content"][0]["content"]
+            assert (
+                "Error: Tool execution failed"
+                in tool_result_msg["content"][0]["content"]
+            )
             assert "Database error" in tool_result_msg["content"][0]["content"]
 
     def test_generate_response_tool_returns_error_string(self, mock_tool_manager):
@@ -276,7 +276,10 @@ class TestAIGeneratorToolCalling:
             initial_response.content[0].type = "tool_use"
             initial_response.content[0].name = "search_course_content"
             initial_response.content[0].id = "tool_123"
-            initial_response.content[0].input = {"query": "test", "course_name": "Invalid"}
+            initial_response.content[0].input = {
+                "query": "test",
+                "course_name": "Invalid",
+            }
 
             # Mock final response
             final_response = Mock()
@@ -287,15 +290,15 @@ class TestAIGeneratorToolCalling:
             mock_client.messages.create.side_effect = [initial_response, final_response]
 
             # Tool returns error string (not exception)
-            mock_tool_manager.execute_tool.return_value = "No course found matching 'Invalid'"
+            mock_tool_manager.execute_tool.return_value = (
+                "No course found matching 'Invalid'"
+            )
 
             # Execute
             generator = AIGenerator("test-api-key", "claude-sonnet-4-20250514")
             tools = mock_tool_manager.get_tool_definitions()
             response = generator.generate_response(
-                "Query",
-                tools=tools,
-                tool_manager=mock_tool_manager
+                "Query", tools=tools, tool_manager=mock_tool_manager
             )
 
             # Assert - should continue normally
@@ -322,7 +325,9 @@ class TestAIGeneratorToolCalling:
             final_response = Mock()
             final_response.stop_reason = "end_turn"
             final_response.content = [Mock()]
-            final_response.content[0].text = "I couldn't find relevant content for that query."
+            final_response.content[0].text = (
+                "I couldn't find relevant content for that query."
+            )
 
             mock_client.messages.create.side_effect = [initial_response, final_response]
 
@@ -333,9 +338,7 @@ class TestAIGeneratorToolCalling:
             generator = AIGenerator("test-api-key", "claude-sonnet-4-20250514")
             tools = mock_tool_manager.get_tool_definitions()
             response = generator.generate_response(
-                "Query",
-                tools=tools,
-                tool_manager=mock_tool_manager
+                "Query", tools=tools, tool_manager=mock_tool_manager
             )
 
             # Assert
@@ -370,9 +373,7 @@ class TestAIGeneratorToolCalling:
             generator = AIGenerator("test-api-key", "claude-sonnet-4-20250514")
             tools = mock_tool_manager.get_tool_definitions()
             response = generator.generate_response(
-                "What's in lesson 1?",
-                tools=tools,
-                tool_manager=mock_tool_manager
+                "What's in lesson 1?", tools=tools, tool_manager=mock_tool_manager
             )
 
             # Assert - verify conversation structure in second API call
@@ -435,9 +436,7 @@ class TestAIGeneratorToolCalling:
             generator = AIGenerator("test-api-key", "claude-sonnet-4-20250514")
             tools = mock_tool_manager.get_tool_definitions()
             response = generator.generate_response(
-                "Query",
-                tools=tools,
-                tool_manager=mock_tool_manager
+                "Query", tools=tools, tool_manager=mock_tool_manager
             )
 
             # Assert - verify tool results structure
@@ -484,9 +483,7 @@ class TestAIGeneratorToolCalling:
             generator = AIGenerator("test-api-key", "claude-sonnet-4-20250514")
             tools = mock_tool_manager.get_tool_definitions()
             response = generator.generate_response(
-                "Query",
-                tools=tools,
-                tool_manager=mock_tool_manager
+                "Query", tools=tools, tool_manager=mock_tool_manager
             )
 
             # Assert - should stop after first round (only 2 API calls, not 3)
@@ -514,7 +511,10 @@ class TestAIGeneratorToolCalling:
             # Assert - verify system prompt in call
             call_args = mock_client.messages.create.call_args[1]
             assert "system" in call_args
-            assert "You are an AI assistant specialized in course materials" in call_args["system"]
+            assert (
+                "You are an AI assistant specialized in course materials"
+                in call_args["system"]
+            )
 
     def test_system_prompt_with_conversation_history(self):
         """Test system prompt includes conversation history"""
@@ -533,7 +533,9 @@ class TestAIGeneratorToolCalling:
             # Execute with history
             generator = AIGenerator("test-api-key", "claude-sonnet-4-20250514")
             history = "User: Previous question\nAssistant: Previous answer"
-            response = generator.generate_response("Follow-up query", conversation_history=history)
+            response = generator.generate_response(
+                "Follow-up query", conversation_history=history
+            )
 
             # Assert
             call_args = mock_client.messages.create.call_args[1]
@@ -577,9 +579,7 @@ class TestAIGeneratorToolCalling:
             generator = AIGenerator("test-api-key", "claude-sonnet-4-20250514")
             tools = mock_tool_manager.get_tool_definitions()
             response = generator.generate_response(
-                "Query",
-                tools=tools,
-                tool_manager=mock_tool_manager
+                "Query", tools=tools, tool_manager=mock_tool_manager
             )
 
             # Assert - third call should have no tools
